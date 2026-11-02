@@ -1,12 +1,12 @@
 {
   "id": "dev.personal.eclipseflacbridge",
   "name": "Eclipse FLAC Bridge",
-  "version": "0.4.1",
-  "versionCode": 6,
+  "version": "0.4.2",
+  "versionCode": 7,
   "apiVersion": 1,
   "minAppVersion": "2.1.0",
   "author": "Personal Eclipse/MySpoti adapter",
-  "description": "Fonte FLAC Eclipse Supporter com diagnóstico de autorização HTTP 403, URL editável e fallback.",
+  "description": "Reprodução e download FLAC com a tua conta Eclipse. Configuração manual: obtém o URL pessoal na conta Eclipse e, num browser de PC com sessão iniciada, abre F12 → Application/Storage → Local Storage → https://eclipsemusic.app e copia o valor de eclipse_token. Cola ambos nas definições da extensão. O token é um segredo; não o partilhes. Experimental: validação completa no Android ainda pendente.",
   "category": "tools",
   "tags": [
     "audio",
@@ -44,14 +44,14 @@
       "key": "addon_url",
       "type": "secret",
       "label": "URL do addon Eclipse",
-      "description": "URL pessoal completo terminado em /manifest.json. Não partilhar.",
+      "description": "Em https://eclipsemusic.app/account, abre Support the project → Eclipse addon → Copy. Cola aqui o URL pessoal completo terminado em /manifest.json. Este link é privado.",
       "default": ""
     },
     {
       "key": "account_token",
       "type": "secret",
       "label": "Token da conta Eclipse",
-      "description": "Cola o token da tua sessão Eclipse. A extensão tenta renová-lo automaticamente enquanto estiver válido.",
+      "description": "Num PC, abre https://eclipsemusic.app/account e inicia sessão. Prime F12 → Application (ou Storage/Armazenamento) → Local Storage → https://eclipsemusic.app. Procura a chave eclipse_token e copia apenas o seu valor (não o nome da chave nem aspas). Cola aqui; não é a password Google. Mantém o token privado. Se não aparecer, confirma que o login foi feito nesse mesmo domínio. A extensão tenta renovar a sessão enquanto estiver válida.",
       "default": ""
     },
     {
@@ -67,10 +67,14 @@
     }
   ],
   "welcome": {
-    "message": "Liga a tua conta Eclipse para reproduzir e descarregar FLAC sem DRM.",
+    "message": "Configuração manual: precisas do URL pessoal do addon e do token da tua sessão Eclipse. Para obter o token, usa as ferramentas de programador de um browser num PC. Nunca partilhes o token ou o URL. As instruções também ficam junto dos campos nas definições.",
     "steps": [
-      "Cola o URL pessoal do addon e o token da conta Eclipse nas definições da extensão.",
-      "Coloca Eclipse FLAC Bridge acima de Spotify em Definições → Reprodução → Fontes áudio."
+      "Num browser de PC, abre https://eclipsemusic.app/account e inicia sessão na tua conta Eclipse.",
+      "Prime F12 → Application/Storage → Local Storage → https://eclipsemusic.app. Procura eclipse_token e copia apenas o valor.",
+      "Nas definições desta extensão, cola esse valor em Token da conta Eclipse. Não é a password Google.",
+      "Na conta Eclipse: Support the project → Eclipse addon → Copy. Cola o link no campo URL do addon Eclipse.",
+      "Coloca Eclipse FLAC Bridge em primeiro nas fontes de reprodução e download."
     ]
-  }
+  },
+  "changelog": "Instruções explícitas para obter o token pelo Local Storage do browser e o URL pela página da conta Eclipse. Visíveis na loja, nas definições e no aviso inicial. Sem alterações ao transporte de áudio."
 }

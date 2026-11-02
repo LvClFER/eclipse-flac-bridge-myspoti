@@ -8,6 +8,16 @@ Descarrega `extension.zip` em Releases e instala-o em Extensões no MySpoti. Nas
 
 O pacote distribuído tem os campos vazios. Nunca publiques tokens, URLs pessoais ou pacotes personalizados com credenciais. O login Google dentro do WebView não faz parte desta versão.
 
+## Como obter o token e o URL
+
+1. Num browser **num PC**, abre https://eclipsemusic.app/account e inicia sessão na conta Eclipse.
+2. Prime **F12** e abre **Application** (Chrome/Edge/Brave) ou **Storage/Armazenamento** (Firefox).
+3. Abre **Local Storage → https://eclipsemusic.app**.
+4. Procura a chave **`eclipse_token`** e copia apenas o seu **valor**, sem aspas. Cola-o no campo **Token da conta Eclipse** da extensão. Não é a password Google.
+5. Para o URL, abre **Support the project → Eclipse addon → Copy** na página da conta. Cola o link completo no campo **URL do addon Eclipse**.
+
+Se a chave não aparecer, confirma que o login foi concluído em `https://eclipsemusic.app`, no mesmo domínio selecionado no Local Storage. Mantém o token e o link privados. Não precisas de colar comandos na consola nem desativar proteções do browser.
+
 ## Sessão
 
 A extensão verifica a sessão no primeiro uso e depois diariamente quando usada. Guarda o token renovado devolvido pelo servidor. Nos testes, os tokens tinham validade de 30 dias e a API devolvia uma renovação por mais 30 dias. Isso não garante validade indefinida: sessões expiradas, revogadas ou alterações no serviço podem exigir novo token. Alterar ou apagar o campo do token elimina a sessão renovada em cache.

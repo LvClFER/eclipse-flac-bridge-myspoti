@@ -1,9 +1,9 @@
-/* Eclipse FLAC Bridge 0.4.1 for MySpoti. No external dependencies.
+/* Eclipse FLAC Bridge 0.4.2 for MySpoti. No external dependencies.
  * All diagnostic logs redact the account-specific path and media URLs.
  */
 (function () {
   'use strict';
-  var P = '[Eclipse Bridge 0.4.1] ';
+  var P = '[Eclipse Bridge 0.4.2] ';
   function s(x) { return x == null ? '' : String(x).trim(); }
   function log(x) { try { myspoti.log(P + x); } catch (e) {} }
   function feature(x) { return !!(myspoti.features && myspoti.features.indexOf(x) >= 0); }
@@ -286,5 +286,5 @@
     if(e.key==='addon_url') log('definições: URL atualizado ('+(baseUrl()?'válido':'inválido')+')');
     if(e.key==='quality') log('definições: qualidade '+quality());
   });
-  log('carregado: versão 0.4.1');
+  log('carregado: versão 0.4.2');
 })();
