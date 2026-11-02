@@ -1,0 +1,89 @@
+{
+  "offline": true,
+  "settings": {
+    "addon_url": "https://api.eclipsemusic.app/addon/test-fixture/music/manifest.json"
+  },
+  "track": {
+    "title": "Test Song",
+    "artist": "Test Artist",
+    "isrc": "TEST00000001",
+    "durationMs": 200000
+  },
+  "http": [
+    {
+      "match": "/manifest.json",
+      "body": {
+        "version": "1.0",
+        "resources": [
+          "resolve",
+          "stream"
+        ]
+      }
+    },
+    {
+      "match": "/resolve?",
+      "body": {
+        "item": {
+          "id": "fixture-1",
+          "title": "Test Song",
+          "artist": "Test Artist",
+          "isrc": "TEST00000001"
+        }
+      }
+    },
+    {
+      "match": "/stream?",
+      "body": {
+        "url": "https://media.example.com/test.flac",
+        "codec": "flac",
+        "container": "flac"
+      }
+    }
+  ],
+  "steps": [
+    {
+      "hook": "audio-source",
+      "expect": {
+        "outcome": "found",
+        "contains": "media.example.com"
+      }
+    },
+    {
+      "hook": "download-source",
+      "expect": {
+        "outcome": "found",
+        "contains": "media.example.com"
+      }
+    },
+    {
+      "http": [
+        {
+          "match": "/resolve?",
+          "status": 429,
+          "retryAfter": 30
+        }
+      ]
+    },
+    {
+      "hook": "audio-source",
+      "expect": {
+        "outcome": "rate-limited",
+        "retryAfterMs": 30000
+      }
+    },
+    {
+      "http": [
+        {
+          "match": "/resolve?",
+          "dns": true
+        }
+      ]
+    },
+    {
+      "hook": "audio-source",
+      "expect": {
+        "outcome": "network"
+      }
+    }
+  ]
+}

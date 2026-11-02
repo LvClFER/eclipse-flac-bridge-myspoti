@@ -1,0 +1,272 @@
+{
+  "offline": true,
+  "settings": {
+    "addon_url": "https://api.eclipsemusic.app/addon/test-fixture/music/manifest.json"
+  },
+  "track": {
+    "title": "Test Song",
+    "artist": "Test Artist",
+    "isrc": "TEST00000001",
+    "durationMs": 200000
+  },
+  "http": [
+    {
+      "match": "/manifest.json",
+      "body": {
+        "version": "1.0",
+        "resources": [
+          "resolve",
+          "stream"
+        ]
+      }
+    },
+    {
+      "match": "/resolve?",
+      "body": {
+        "item": {
+          "id": "fixture-1",
+          "title": "Test Song",
+          "artist": "Test Artist",
+          "isrc": "TEST00000001"
+        }
+      }
+    },
+    {
+      "match": "/stream?",
+      "body": {
+        "url": "https://media.example.com/test.flac",
+        "codec": "flac",
+        "container": "flac"
+      }
+    }
+  ],
+  "steps": [
+    {
+      "http": [
+        {
+          "match": "/resolve?",
+          "status": 503
+        }
+      ]
+    },
+    {
+      "hook": "audio-source",
+      "expect": {
+        "outcome": "server-down"
+      }
+    },
+    {
+      "http": [
+        {
+          "match": "/resolve?",
+          "body": "invalid JSON"
+        }
+      ]
+    },
+    {
+      "hook": "audio-source",
+      "expect": {
+        "outcome": "server-down"
+      }
+    },
+    {
+      "http": [
+        {
+          "match": "/resolve?",
+          "status": 401
+        }
+      ]
+    },
+    {
+      "hook": "audio-source",
+      "expect": {
+        "outcome": "sign-in"
+      }
+    },
+    {
+      "http": [
+        {
+          "match": "/resolve?",
+          "body": {
+            "item": null
+          }
+        }
+      ]
+    },
+    {
+      "hook": "audio-source",
+      "expect": {
+        "outcome": "not-found"
+      }
+    },
+    {
+      "http": [
+        {
+          "match": "/resolve?",
+          "body": {
+            "item": {
+              "id": "fixture-1",
+              "title": "Test Song",
+              "artist": "Test Artist",
+              "isrc": "TEST00000001"
+            }
+          }
+        },
+        {
+          "match": "/stream?",
+          "status": 403
+        }
+      ]
+    },
+    {
+      "hook": "audio-source",
+      "expect": {
+        "outcome": "sign-in"
+      }
+    },
+    {
+      "http": [
+        {
+          "match": "/resolve?",
+          "body": {
+            "item": {
+              "id": "fixture-1",
+              "title": "Test Song",
+              "artist": "Test Artist",
+              "isrc": "TEST00000001"
+            }
+          }
+        },
+        {
+          "match": "/stream?",
+          "body": {
+            "url": "https://media.example.com/file.flac",
+            "codec": "flac",
+            "drm": {
+              "type": "widevine"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "hook": "audio-source",
+      "expect": {
+        "outcome": "quality-unavailable"
+      }
+    },
+    {
+      "http": [
+        {
+          "match": "/resolve?",
+          "body": {
+            "item": {
+              "id": "fixture-1",
+              "title": "Test Song",
+              "artist": "Test Artist",
+              "isrc": "TEST00000001"
+            }
+          }
+        },
+        {
+          "match": "/stream?",
+          "body": {
+            "url": "https://media.example.com/file.flac",
+            "codec": "mp3"
+          }
+        }
+      ]
+    },
+    {
+      "hook": "audio-source",
+      "expect": {
+        "outcome": "quality-unavailable"
+      }
+    },
+    {
+      "http": [
+        {
+          "match": "/resolve?",
+          "body": {
+            "item": {
+              "id": "fixture-1",
+              "title": "Test Song",
+              "artist": "Test Artist",
+              "isrc": "TEST00000001"
+            }
+          }
+        },
+        {
+          "match": "/stream?",
+          "body": {
+            "url": "https://media.example.com/file.flac",
+            "codec": "flac",
+            "expiresAt": 1
+          }
+        }
+      ]
+    },
+    {
+      "hook": "audio-source",
+      "expect": {
+        "outcome": "quality-unavailable"
+      }
+    },
+    {
+      "http": [
+        {
+          "match": "/resolve?",
+          "body": {
+            "item": {
+              "id": "wrong",
+              "title": "Test Song Live",
+              "artist": "Test Artist"
+            }
+          }
+        },
+        {
+          "match": "/stream?",
+          "body": {
+            "url": "https://media.example.com/test.flac",
+            "codec": "flac",
+            "container": "flac"
+          }
+        }
+      ]
+    },
+    {
+      "hook": "audio-source",
+      "expect": {
+        "outcome": "not-found"
+      }
+    },
+    {
+      "http": [
+        {
+          "match": "/resolve?",
+          "body": {
+            "item": {
+              "id": "wrong",
+              "title": "Test Song",
+              "artist": "Test Artist Tribute"
+            }
+          }
+        },
+        {
+          "match": "/stream?",
+          "body": {
+            "url": "https://media.example.com/test.flac",
+            "codec": "flac",
+            "container": "flac"
+          }
+        }
+      ]
+    },
+    {
+      "hook": "audio-source",
+      "expect": {
+        "outcome": "not-found"
+      }
+    }
+  ]
+}

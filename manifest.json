@@ -1,0 +1,76 @@
+{
+  "id": "dev.personal.eclipseflacbridge",
+  "name": "Eclipse FLAC Bridge",
+  "version": "0.4.1",
+  "versionCode": 6,
+  "apiVersion": 1,
+  "minAppVersion": "2.1.0",
+  "author": "Personal Eclipse/MySpoti adapter",
+  "description": "Fonte FLAC Eclipse Supporter com diagnóstico de autorização HTTP 403, URL editável e fallback.",
+  "category": "tools",
+  "tags": [
+    "audio",
+    "flac",
+    "eclipse",
+    "lossless"
+  ],
+  "actions": [
+    {
+      "name": "audio.source",
+      "why": "Reproduz faixas FLAC diretas da tua subscrição Eclipse"
+    },
+    {
+      "name": "download.source",
+      "why": "Fornece ficheiros FLAC diretos para download no MySpoti"
+    },
+    {
+      "name": "network",
+      "hosts": [
+        "api.eclipsemusic.app"
+      ],
+      "why": "Contacta a API pessoal do teu addon Eclipse para obter streams"
+    },
+    {
+      "name": "settings.page",
+      "why": "Permite alterar o URL da fonte Eclipse e a qualidade FLAC"
+    },
+    {
+      "name": "storage",
+      "why": "Guarda e renova a sessão Eclipse apenas nesta extensão"
+    }
+  ],
+  "settings": [
+    {
+      "key": "addon_url",
+      "type": "secret",
+      "label": "URL do addon Eclipse",
+      "description": "URL pessoal completo terminado em /manifest.json. Não partilhar.",
+      "default": ""
+    },
+    {
+      "key": "account_token",
+      "type": "secret",
+      "label": "Token da conta Eclipse",
+      "description": "Cola o token da tua sessão Eclipse. A extensão tenta renová-lo automaticamente enquanto estiver válido.",
+      "default": ""
+    },
+    {
+      "key": "quality",
+      "type": "choice",
+      "label": "Qualidade de áudio",
+      "description": "Pede FLAC lossless ao serviço. A qualidade real depende do stream devolvido.",
+      "default": "FLAC",
+      "options": [
+        "FLAC",
+        "Hi-Res FLAC"
+      ]
+    }
+  ],
+  "welcome": {
+    "message": "Liga a tua conta Eclipse para reproduzir e descarregar FLAC sem DRM.",
+    "steps": [
+      "Cola o URL pessoal do addon e o token da conta Eclipse nas definições da extensão.",
+      "Coloca Eclipse FLAC Bridge acima de Spotify em Definições → Reprodução → Fontes áudio."
+    ]
+  }
+}

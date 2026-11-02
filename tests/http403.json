@@ -1,0 +1,43 @@
+{
+  "offline": true,
+  "settings": {
+    "addon_url": "https://api.eclipsemusic.app/addon/test-fixture/music/manifest.json"
+  },
+  "track": {
+    "title": "Test Song",
+    "artist": "Test Artist",
+    "isrc": "TEST00000001",
+    "durationMs": 200000
+  },
+  "http": [
+    {
+      "match": "/manifest.json",
+      "body": {
+        "version": "1.0",
+        "resources": [
+          "resolve",
+          "stream"
+        ]
+      }
+    },
+    {
+      "match": "/resolve?",
+      "status": 403,
+      "headers": {
+        "content-type": "application/json"
+      },
+      "body": {
+        "error": "subscription expired"
+      }
+    }
+  ],
+  "steps": [
+    {
+      "hook": "audio-source",
+      "expect": {
+        "contains": "HTTP 403",
+        "outcome": "sign-in"
+      }
+    }
+  ]
+}
