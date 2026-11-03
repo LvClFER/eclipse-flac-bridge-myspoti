@@ -1,12 +1,12 @@
 {
   "id": "dev.personal.eclipseflacbridge",
   "name": "Eclipse FLAC Bridge",
-  "version": "0.4.2",
-  "versionCode": 7,
+  "version": "0.5.0",
+  "versionCode": 9,
   "apiVersion": 1,
   "minAppVersion": "2.1.0",
   "author": "Personal Eclipse/MySpoti adapter",
-  "description": "Reprodução e download FLAC com a tua conta Eclipse. Configuração manual: obtém o URL pessoal na conta Eclipse e, num browser de PC com sessão iniciada, abre F12 → Application/Storage → Local Storage → https://eclipsemusic.app e copia o valor de eclipse_token. Cola ambos nas definições da extensão. O token é um segredo; não o partilhes. Experimental: validação completa no Android ainda pendente.",
+  "description": "Reprodução e download FLAC com a tua conta Eclipse. Retoma automaticamente Eclipse quando o Spotify Connect regressa ao telefone. Desliga no MySpoti Contar reproduções de extensões no Spotify. Configuração manual por URL e token; as instruções estão junto dos campos. O regresso pode ter uma breve passagem pelo áudio Spotify, pois depende dos eventos e do carregamento da fonte.",
   "category": "tools",
   "tags": [
     "audio",
@@ -37,6 +37,18 @@
     {
       "name": "storage",
       "why": "Guarda e renova a sessão Eclipse apenas nesta extensão"
+    },
+    {
+      "name": "playback.events",
+      "why": "Deteta a saída e o regresso da reprodução entre telefone e PC"
+    },
+    {
+      "name": "library.read",
+      "why": "Confirma qual dispositivo Spotify está realmente ativo"
+    },
+    {
+      "name": "playback.control",
+      "why": "Retoma a fonte Eclipse apenas após regresso confirmado ao telefone"
     }
   ],
   "settings": [
@@ -64,17 +76,24 @@
         "FLAC",
         "Hi-Res FLAC"
       ]
+    },
+    {
+      "key": "connect_return",
+      "type": "toggle",
+      "label": "Retomar Eclipse ao voltar ao telefone (experimental)",
+      "description": "Desliga a opção do MySpoti Contar reproduções de extensões no Spotify. Deteta o regresso pelos eventos de reprodução; pode demorar até ao próximo evento de progresso (10 s).",
+      "default": true
     }
   ],
   "welcome": {
-    "message": "Configuração manual: precisas do URL pessoal do addon e do token da tua sessão Eclipse. Para obter o token, usa as ferramentas de programador de um browser num PC. Nunca partilhes o token ou o URL. As instruções também ficam junto dos campos nas definições.",
+    "message": "Para transferir entre telefone e PC, desliga no MySpoti Contar reproduções de extensões no Spotify e mantém Retomar Eclipse ao voltar ao telefone ligado nesta extensão. O regresso pode ter uma breve passagem pelo áudio Spotify. Não precisas de trocar manualmente a fonte.",
     "steps": [
       "Num browser de PC, abre https://eclipsemusic.app/account e inicia sessão na tua conta Eclipse.",
       "Prime F12 → Application/Storage → Local Storage → https://eclipsemusic.app. Procura eclipse_token e copia apenas o valor.",
       "Nas definições desta extensão, cola esse valor em Token da conta Eclipse. Não é a password Google.",
       "Na conta Eclipse: Support the project → Eclipse addon → Copy. Cola o link no campo URL do addon Eclipse.",
-      "Coloca Eclipse FLAC Bridge em primeiro nas fontes de reprodução e download."
+      "Desliga no MySpoti Contar reproduções de extensões no Spotify e coloca Eclipse em primeiro nas fontes de reprodução e download."
     ]
   },
-  "changelog": "Instruções explícitas para obter o token pelo Local Storage do browser e o URL pela página da conta Eclipse. Visíveis na loja, nas definições e no aviso inicial. Sem alterações ao transporte de áudio."
+  "changelog": "Retoma automática da fonte Eclipse após regresso do Spotify Connect ao telefone, confirmada pelo utilizador nos dois sentidos. Mantém desligado o espelho integrado do MySpoti. Novas permissões: eventos, consulta de dispositivos e controlo da reprodução. Pode ouvir-se Spotify brevemente no regresso; deteção dependente dos eventos, até ao próximo progresso de 10 s. Download completo no Android ainda não confirmado."
 }

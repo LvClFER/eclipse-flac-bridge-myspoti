@@ -1,9 +1,9 @@
-/* Eclipse FLAC Bridge 0.4.2 for MySpoti. No external dependencies.
+/* Eclipse FLAC Bridge 0.5.0 for MySpoti. No external dependencies.
  * All diagnostic logs redact the account-specific path and media URLs.
  */
 (function () {
   'use strict';
-  var P = '[Eclipse Bridge 0.4.2] ';
+  var P = '[Eclipse Bridge 0.5.0] ';
   function s(x) { return x == null ? '' : String(x).trim(); }
   function log(x) { try { myspoti.log(P + x); } catch (e) {} }
   function feature(x) { return !!(myspoti.features && myspoti.features.indexOf(x) >= 0); }
@@ -286,5 +286,31 @@
     if(e.key==='addon_url') log('definições: URL atualizado ('+(baseUrl()?'válido':'inválido')+')');
     if(e.key==='quality') log('definições: qualidade '+quality());
   });
-  log('carregado: versão 0.4.2');
+  var connectWasAway=false, connectReturnUri='';
+  myspoti.on('playback',function(e){
+    if (myspoti.settings.get('connect_return')===false) return;
+    if (e.source==='local' && e.origin==='audio-source' && e.providerId==='dev.personal.eclipseflacbridge') {
+      if (e.type==='start' || e.type==='resume') { connectWasAway=false; connectReturnUri=''; }
+      return;
+    }
+    if (e.source!=='spotify' || ['start','resume','progress','seek'].indexOf(e.type)<0) return;
+    var uri=s(e.track && e.track.uri);
+    if (!/^spotify:track:[A-Za-z0-9]{22}$/.test(uri)) return;
+    try {
+      var devices=myspoti.spotify.devices.list(), active=devices.filter(function(d){return d.active;});
+      if (active.length!==1) return;
+      if (!active[0].local) {
+        if (!connectWasAway) log('connect: dispositivo remoto confirmado; não retomar no telefone');
+        connectWasAway=true; connectReturnUri=''; return;
+      }
+      // A transient local echo before the remote takeover is never a return.
+      if (!connectWasAway || connectReturnUri===uri) return;
+      var state=myspoti.spotify.player.state(), current=myspoti.player.current();
+      if (!state || state.isPaused || state.isBuffering || !state.item || state.item.uri!==uri || !current || current.uri!==uri) return;
+      connectReturnUri=uri;
+      if (myspoti.player.play()===false) { connectReturnUri=''; return; }
+      log('connect: regresso ao telefone confirmado; retoma pedida ao leitor MySpoti');
+    } catch (ignored) { log('connect: estado dos dispositivos indisponível; reprodução mantida'); }
+  });
+  log('carregado: versão 0.5.0');
 })();

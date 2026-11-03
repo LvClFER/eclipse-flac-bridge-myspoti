@@ -28,7 +28,19 @@ Suporta FLAC direto e playlists HLS FLAC/fMP4 sem encriptação, finitas e com s
 
 Requer MySpoti 2.1.0 ou posterior e a funcionalidade `audio.manifest` para áudio segmentado. A qualidade real depende do stream devolvido pelo Eclipse.
 
-**Estado experimental:** resolução e manifestos foram testados com a API real, incluindo FLAC 24 bits/96 kHz. Um ficheiro FLAC real foi remuxado e descodificado integralmente no PC. Reprodução, seek e download completos no MySpoti/Android ainda não foram confirmados. Não há afiliação com Eclipse ou MySpoti.
+**Estado experimental:** resolução e manifestos foram testados com a API real, incluindo FLAC 24 bits/96 kHz. Um ficheiro FLAC real foi remuxado e descodificado integralmente no PC. O utilizador confirmou reprodução Eclipse e transferência Connect nos dois sentidos no Android; download completo e seek no Android ainda não foram confirmados. Não há afiliação com Eclipse ou MySpoti.
+
+## Spotify Connect: telefone e computador
+
+Para evitar que o MySpoti volte a puxar a música do PC para o telefone:
+
+1. Desliga **Contar reproduções de extensões no Spotify** nas definições do MySpoti.
+2. Mantém **Retomar Eclipse ao voltar ao telefone (experimental)** ligado nas definições desta extensão.
+3. Mantém Eclipse em primeiro nas fontes de reprodução.
+
+A extensão observa o dispositivo remoto e só pede retoma pela fonte Eclipse quando confirma o telefone como dispositivo ativo. O utilizador confirmou o percurso telefone → PC → telefone; no regresso pode ouvir-se Spotify por breves segundos antes de Eclipse. A deteção depende dos eventos de reprodução e pode esperar pelo próximo progresso de 10 s; uma ida/volta muito rápida pode não ser detetada. Pausa, buffering ou dispositivo ambíguo não provocam retoma automática.
+
+Esta funcionalidade não cria um espelho Spotify próprio nem garante contagem Spotify enquanto Eclipse toca. A atualização pede permissões de eventos de reprodução, consulta de dispositivos (`library.read`) e controlo de reprodução. Os campos de token e URL permanecem vazios no pacote público.
 
 ## Desenvolvimento e testes
 
