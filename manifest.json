@@ -1,12 +1,12 @@
 {
   "id": "dev.personal.eclipseflacbridge",
   "name": "Eclipse FLAC Bridge",
-  "version": "0.5.0",
-  "versionCode": 9,
+  "version": "0.5.1",
+  "versionCode": 10,
   "apiVersion": 1,
   "minAppVersion": "2.1.0",
   "author": "Personal Eclipse/MySpoti adapter",
-  "description": "Reprodução e download FLAC com a tua conta Eclipse. Retoma automaticamente Eclipse quando o Spotify Connect regressa ao telefone. Desliga no MySpoti Contar reproduções de extensões no Spotify. Configuração manual por URL e token; as instruções estão junto dos campos. O regresso pode ter uma breve passagem pelo áudio Spotify, pois depende dos eventos e do carregamento da fonte.",
+  "description": "FLAC playback and downloads using your authorized Eclipse account. Automatically resumes Eclipse when Spotify Connect returns to your phone. Turn off MySpoti's Count extension plays on Spotify setting. Enter your addon URL and account token; instructions are shown beside each field. You may briefly hear Spotify audio while Eclipse loads on return.",
   "category": "tools",
   "tags": [
     "audio",
@@ -17,60 +17,60 @@
   "actions": [
     {
       "name": "audio.source",
-      "why": "Reproduz faixas FLAC diretas da tua subscrição Eclipse"
+      "why": "Play FLAC audio from your authorized Eclipse account"
     },
     {
       "name": "download.source",
-      "why": "Fornece ficheiros FLAC diretos para download no MySpoti"
+      "why": "Provide FLAC files for MySpoti downloads"
     },
     {
       "name": "network",
       "hosts": [
         "api.eclipsemusic.app"
       ],
-      "why": "Contacta a API pessoal do teu addon Eclipse para obter streams"
+      "why": "Contact the Eclipse API to resolve tracks and obtain audio streams"
     },
     {
       "name": "settings.page",
-      "why": "Permite alterar o URL da fonte Eclipse e a qualidade FLAC"
+      "why": "Configure your Eclipse addon URL, account token and audio quality"
     },
     {
       "name": "storage",
-      "why": "Guarda e renova a sessão Eclipse apenas nesta extensão"
+      "why": "Keep and renew this extension's Eclipse session"
     },
     {
       "name": "playback.events",
-      "why": "Deteta a saída e o regresso da reprodução entre telefone e PC"
+      "why": "Detect playback moving between your phone and computer"
     },
     {
       "name": "library.read",
-      "why": "Confirma qual dispositivo Spotify está realmente ativo"
+      "why": "Check which Spotify device is currently active"
     },
     {
       "name": "playback.control",
-      "why": "Retoma a fonte Eclipse apenas após regresso confirmado ao telefone"
+      "why": "Resume Eclipse only after playback has returned to your phone"
     }
   ],
   "settings": [
     {
       "key": "addon_url",
       "type": "secret",
-      "label": "URL do addon Eclipse",
-      "description": "Em https://eclipsemusic.app/account, abre Support the project → Eclipse addon → Copy. Cola aqui o URL pessoal completo terminado em /manifest.json. Este link é privado.",
+      "label": "Eclipse addon URL",
+      "description": "Open https://eclipsemusic.app/account → Support the project → Eclipse addon → Copy. Paste your complete personal URL ending in /manifest.json here. Keep this link private.",
       "default": ""
     },
     {
       "key": "account_token",
       "type": "secret",
-      "label": "Token da conta Eclipse",
-      "description": "Num PC, abre https://eclipsemusic.app/account e inicia sessão. Prime F12 → Application (ou Storage/Armazenamento) → Local Storage → https://eclipsemusic.app. Procura a chave eclipse_token e copia apenas o seu valor (não o nome da chave nem aspas). Cola aqui; não é a password Google. Mantém o token privado. Se não aparecer, confirma que o login foi feito nesse mesmo domínio. A extensão tenta renovar a sessão enquanto estiver válida.",
+      "label": "Eclipse account token",
+      "description": "On a PC, sign in at https://eclipsemusic.app/account. Press F12 → Application (or Storage) → Local Storage → https://eclipsemusic.app. Find eclipse_token and copy only its value, without quotes. Paste it here; this is not your Google password. If the key is missing, check that you signed in on that same domain. Keep the token private. The extension attempts to renew the session while it remains valid.",
       "default": ""
     },
     {
       "key": "quality",
       "type": "choice",
-      "label": "Qualidade de áudio",
-      "description": "Pede FLAC lossless ao serviço. A qualidade real depende do stream devolvido.",
+      "label": "Audio quality",
+      "description": "Request lossless FLAC. The actual quality depends on the stream returned by Eclipse.",
       "default": "FLAC",
       "options": [
         "FLAC",
@@ -80,20 +80,20 @@
     {
       "key": "connect_return",
       "type": "toggle",
-      "label": "Retomar Eclipse ao voltar ao telefone (experimental)",
-      "description": "Desliga a opção do MySpoti Contar reproduções de extensões no Spotify. Deteta o regresso pelos eventos de reprodução; pode demorar até ao próximo evento de progresso (10 s).",
+      "label": "Resume Eclipse when returning to this phone (experimental)",
+      "description": "Turn off MySpoti's Count extension plays on Spotify setting. Return detection uses playback events and may wait until the next progress event (10 seconds).",
       "default": true
     }
   ],
   "welcome": {
-    "message": "Para transferir entre telefone e PC, desliga no MySpoti Contar reproduções de extensões no Spotify e mantém Retomar Eclipse ao voltar ao telefone ligado nesta extensão. O regresso pode ter uma breve passagem pelo áudio Spotify. Não precisas de trocar manualmente a fonte.",
+    "message": "To transfer playback between your phone and PC, turn off Count extension plays on Spotify in MySpoti and keep Resume Eclipse when returning to this phone enabled in this extension. You may briefly hear Spotify before Eclipse resumes. There is no need to switch audio sources manually.",
     "steps": [
-      "Num browser de PC, abre https://eclipsemusic.app/account e inicia sessão na tua conta Eclipse.",
-      "Prime F12 → Application/Storage → Local Storage → https://eclipsemusic.app. Procura eclipse_token e copia apenas o valor.",
-      "Nas definições desta extensão, cola esse valor em Token da conta Eclipse. Não é a password Google.",
-      "Na conta Eclipse: Support the project → Eclipse addon → Copy. Cola o link no campo URL do addon Eclipse.",
-      "Desliga no MySpoti Contar reproduções de extensões no Spotify e coloca Eclipse em primeiro nas fontes de reprodução e download."
+      "On a PC, open https://eclipsemusic.app/account and sign in to your Eclipse account.",
+      "Press F12 → Application/Storage → Local Storage → https://eclipsemusic.app. Find eclipse_token and copy only its value.",
+      "Paste that value into Eclipse account token in this extension's settings. This is not your Google password.",
+      "In your Eclipse account: Support the project → Eclipse addon → Copy. Paste the link into Eclipse addon URL.",
+      "Turn off MySpoti's Count extension plays on Spotify setting and put Eclipse first in playback and download sources."
     ]
   },
-  "changelog": "Retoma automática da fonte Eclipse após regresso do Spotify Connect ao telefone, confirmada pelo utilizador nos dois sentidos. Mantém desligado o espelho integrado do MySpoti. Novas permissões: eventos, consulta de dispositivos e controlo da reprodução. Pode ouvir-se Spotify brevemente no regresso; deteção dependente dos eventos, até ao próximo progresso de 10 s. Download completo no Android ainda não confirmado."
+  "changelog": "All extension interface text, setup instructions, permission explanations, diagnostics and public documentation are now in English. Playback and Connect behavior are unchanged. The token and addon URL fields remain empty in the public package."
 }

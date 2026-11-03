@@ -1,9 +1,9 @@
-/* Eclipse FLAC Bridge 0.5.0 for MySpoti. No external dependencies.
+/* Eclipse FLAC Bridge 0.5.1 for MySpoti. No external dependencies.
  * All diagnostic logs redact the account-specific path and media URLs.
  */
 (function () {
   'use strict';
-  var P = '[Eclipse Bridge 0.5.0] ';
+  var P = '[Eclipse Bridge 0.5.1] ';
   function s(x) { return x == null ? '' : String(x).trim(); }
   function log(x) { try { myspoti.log(P + x); } catch (e) {} }
   function feature(x) { return !!(myspoti.features && myspoti.features.indexOf(x) >= 0); }
@@ -40,9 +40,9 @@
       myspoti.storage.set('session_token',data.token);
       myspoti.storage.set('session_addon_url',url);
       myspoti.storage.set('session_checked',Date.now());
-      log('sessão: autenticada e URL configurado automaticamente');
+      log('session: authenticated; addon URL configured automatically');
       return {};
-    } catch (e) { log('sessão: verificação indisponível'); return {error:'network'}; }
+    } catch (e) { log('session: verification unavailable'); return {error:'network'}; }
   }
   function quality() { return s(myspoti.settings.get('quality')) === 'Hi-Res FLAC' ? 'HI_RES_LOSSLESS' : 'LOSSLESS'; }
   function q(params) { return myspoti.query(params); }
@@ -52,16 +52,16 @@
     var body = s(r && r.body).toLowerCase().slice(0,5000);
     var h = (r && r.headers) || {};
     var type = s(h['content-type']).toLowerCase();
-    var ct = type.indexOf('json') >= 0 ? 'json' : type.indexOf('html') >= 0 ? 'html' : 'outro/desconhecido';
-    var category = 'motivo não especificado';
-    if (/expired|expirad/.test(body) && /token|key|link|subscription|assinatura|subscri/.test(body)) category='chave/subscrição expirada';
-    else if (/subscription|supporter|subscri|membership|premium|payment|billing/.test(body)) category='subscrição/permissões da conta';
-    else if (/invalid.{0,16}(token|key|api key)|invalid.{0,16}addon/.test(body)) category='chave do addon inválida';
-    else if (/unauthori[sz]ed|authentication|authentication required|access token|login required|log in|not authenticated|missing token|bearer/.test(body)) category='autenticação adicional necessária';
-    else if (/only.{0,30}(eclipse|app|client)|unsupported client|not allowed.{0,30}client|client.{0,30}forbidden/.test(body)) category='cliente externo não autorizado';
-    else if (/cloudflare|attention required|access denied|bot|security check|waf/.test(body)) category='proteção do servidor/restrição de acesso';
-    else if (/forbidden|access denied|not allowed|denied|permission/.test(body)) category='sem permissão';
-    log('HTTP ' + r.status + ': formato=' + ct + ', classificação=' + category + ', WWW-Authenticate=' + (h['www-authenticate'] ? 'sim' : 'não'));
+    var ct = type.indexOf('json') >= 0 ? 'json' : type.indexOf('html') >= 0 ? 'html' : 'other/unknown';
+    var category = 'unspecified reason';
+    if (/expired|expirad/.test(body) && /token|key|link|subscription|assinatura|subscri/.test(body)) category='expired key/subscription';
+    else if (/subscription|supporter|subscri|membership|premium|payment|billing/.test(body)) category='subscription/account permissions';
+    else if (/invalid.{0,16}(token|key|api key)|invalid.{0,16}addon/.test(body)) category='invalid addon key';
+    else if (/unauthori[sz]ed|authentication|authentication required|access token|login required|log in|not authenticated|missing token|bearer/.test(body)) category='additional authentication required';
+    else if (/only.{0,30}(eclipse|app|client)|unsupported client|not allowed.{0,30}client|client.{0,30}forbidden/.test(body)) category='external client not authorized';
+    else if (/cloudflare|attention required|access denied|bot|security check|waf/.test(body)) category='server protection/access restriction';
+    else if (/forbidden|access denied|not allowed|denied|permission/.test(body)) category='permission denied';
+    log('HTTP ' + r.status + ': format=' + ct + ', classification=' + category + ', WWW-Authenticate=' + (h['www-authenticate'] ? 'yes' : 'no'));
   }
   function jsonGet(url, stage) {
     try {
@@ -79,15 +79,15 @@
       if (!r.ok) return {error:'http-' + r.status};
       try {
         var data = r.json();
-        if (data && typeof data === 'object') log(stage + ': campos [' + Object.keys(data).slice(0,12).join(',') + ']');
+        if (data && typeof data === 'object') log(stage + ': fields [' + Object.keys(data).slice(0,12).join(',') + ']');
         return {data:data};
       } catch (e) {
-        log(stage + ': resposta não é JSON válido');
+        log(stage + ': response is not valid JSON');
         return {error:'invalid-json'};
       }
     } catch (e) {
       // Do not expose exception text: the request URL contains a private subscriber key.
-      log(stage + ': erro de rede/timeout');
+      log(stage + ': network error/timeout');
       return {error:'network'};
     }
   }
@@ -103,34 +103,34 @@
     return '';
   }
   function matching(t, item) {
-    if (!item || typeof item !== 'object') return {ok:false, why:'item inválido'};
+    if (!item || typeof item !== 'object') return {ok:false, why:'invalid item'};
     var a = s(t.isrc).toUpperCase(), b = s(item.isrc).toUpperCase();
-    if (a && b) return {ok:a===b, why:a===b?'ISRC confirmado':'ISRC diferente', isrc:a===b};
+    if (a && b) return {ok:a===b, why:a===b?'ISRC confirmed':'ISRC mismatch', isrc:a===b};
     var title = norm(t.title), got = norm(item.title || item.name);
     // Avoid treating an empty metadata response as a verified match.
-    if (!got || !title || got !== title) return {ok:false, why:'título divergente'};
+    if (!got || !title || got !== title) return {ok:false, why:'title mismatch'};
     var src = norm(t.artist), dst = norm(artistName(item.artist) || (item.artists && artistName(item.artists[0])));
-    if (!src || !dst || src !== dst) return {ok:false, why:'artista divergente'};
+    if (!src || !dst || src !== dst) return {ok:false, why:'artist mismatch'};
     var d1 = Number(t.durationMs), d2 = Number(item.durationMs || (Number(item.duration) > 0 ? Number(item.duration) * 1000 : 0));
-    if (d1 > 0 && d2 > 0 && Math.abs(d1-d2) > 15000) return {ok:false, why:'duração divergente'};
-    return {ok:true, why:'metadados compatíveis', isrc:false};
+    if (d1 > 0 && d2 > 0 && Math.abs(d1-d2) > 15000) return {ok:false, why:'duration mismatch'};
+    return {ok:true, why:'matching metadata', isrc:false};
   }
   function resolve(t, base, includeIsrc) {
     var p = {title:s(t.title), artist:s(t.artist)};
     if (includeIsrc && s(t.isrc)) p.isrc = s(t.isrc);
     if (Number(t.durationMs)>0) p.durationMs = Number(t.durationMs);
-    var stage = 'resolve' + (includeIsrc && s(t.isrc) ? '(ISRC)' : '(texto)');
+    var stage = 'resolve' + (includeIsrc && s(t.isrc) ? '(ISRC)' : '(text)');
     var r = jsonGet(base + '/resolve?' + q(p), stage);
     if (r.error) { r.stage='resolve'; return r; }
     var d = r.data || {};
-    if (d.item === null || d.found === false) { log(stage + ': sem correspondência'); return {miss:true}; }
+    if (d.item === null || d.found === false) { log(stage + ': no match'); return {miss:true}; }
     var it = d.item || d.track || (d.result && d.result.item) || d.result || d;
     if (!it || typeof it !== 'object' || !s(it.id || it.trackId || d.trackId)) {
-      log(stage + ': sem ID; item campos [' + (it && typeof it === 'object' ? Object.keys(it).slice(0,10).join(',') : 'nenhum') + ']');
+      log(stage + ': no ID; item fields [' + (it && typeof it === 'object' ? Object.keys(it).slice(0,10).join(',') : 'none') + ']');
       return {miss:true};
     }
     var m = matching(t,it);
-    log(stage + ': ID ' + (m.ok ? 'encontrado' : 'rejeitado') + ' (' + m.why + ')');
+    log(stage + ': ID ' + (m.ok ? 'found' : 'rejected') + ' (' + m.why + ')');
     if (!m.ok) return {miss:true};
     return {id:s(it.id || it.trackId || d.trackId), isrcMatched:!!m.isrc, item:it};
   }
@@ -180,13 +180,13 @@
   }
   function playable(payload) {
     var r = streamObject(payload);
-    if (!r || typeof r !== 'object') { log('stream: resposta vazia ou inválida'); return null; }
+    if (!r || typeof r !== 'object') { log('stream: empty or invalid response'); return null; }
     var codec=s(r.codec || r.format).toLowerCase(), container=s(r.container).toLowerCase();
     var manifest=s(r.manifest).toLowerCase(), encrypted=r.encrypted === true || r.isEncrypted === true || !!r.drm || !!r.drmInfo || !!r.licenseUrl || !!r.licenseURL;
-    log('stream: codec='+(codec||'?')+', container='+(container||'?')+', manifest='+(manifest||'?')+', drm='+(encrypted?'sim':'não'));
-    if (encrypted) { log('stream: requer DRM; não é possível fornecer FLAC simples'); return null; }
+    log('stream: codec='+(codec||'?')+', container='+(container||'?')+', manifest='+(manifest||'?')+', drm='+(encrypted?'yes':'no'));
+    if (encrypted) { log('stream: DRM required; clear FLAC cannot be provided'); return null; }
     if ((manifest==='hls' || s(r.format).toLowerCase()==='hls') && codec==='flac' && container==='fmp4') {
-      if (!feature('audio.manifest')) { log('stream: esta versão do MySpoti não suporta manifestos FLAC'); return null; }
+      if (!feature('audio.manifest')) { log('stream: this MySpoti version does not support FLAC manifests'); return null; }
       var playlist=s(r.url || r.streamURL || r.streamUrl);
       if (!/^https:\/\/api\.eclipsemusic\.app\/api\/tidal\/hls\//.test(playlist)) return null;
       try {
@@ -194,17 +194,17 @@
         if (!response.ok) { log('playlist: HTTP '+response.status); return null; }
         var audio=hlsManifest(response.body);
         if (audio) { audio.bitDepth=Number(r.bitDepth)||undefined; audio.sampleRate=Number(r.sampleRate)||undefined; }
-        log('stream: manifesto FLAC '+(audio?'compatível':'não suportado'));
+        log('stream: FLAC manifest '+(audio?'compatible':'unsupported'));
         return audio;
-      } catch (e) { log('playlist: rede/formato indisponível'); return null; }
+      } catch (e) { log('playlist: network/format unavailable'); return null; }
     }
-    if (manifest==='hls' || manifest==='dash' || container==='fmp4') { log('stream: áudio segmentado incompatível'); return null; }
+    if (manifest==='hls' || manifest==='dash' || container==='fmp4') { log('stream: incompatible segmented audio'); return null; }
     var url=s(r.url || r.streamURL || r.streamUrl);
-    if (!/^https:\/\/[^\s]+/i.test(url)) { log('stream: não devolveu um URL HTTPS direto'); return null; }
+    if (!/^https:\/\/[^\s]+/i.test(url)) { log('stream: no direct HTTPS URL returned'); return null; }
     var fileFlac=/\.flac$/i.test(url.split('?')[0]);
-    if (codec && ['flac','audio/flac','audio/x-flac'].indexOf(codec) < 0) { log('stream: codec não é FLAC'); return null; }
-    if (container && container!=='flac' && container!=='none') { log('stream: container não é FLAC simples'); return null; }
-    if (!codec && container!=='flac' && !fileFlac) { log('stream: formato FLAC não comprovado'); return null; }
+    if (codec && ['flac','audio/flac','audio/x-flac'].indexOf(codec) < 0) { log('stream: codec is not FLAC'); return null; }
+    if (container && container!=='flac' && container!=='none') { log('stream: container is not plain FLAC'); return null; }
+    if (!codec && container!=='flac' && !fileFlac) { log('stream: FLAC format not verified'); return null; }
     var result={url:url,mimeType:'audio/flac',codec:'flac',source:'Eclipse Cloud · FLAC'};
     var bit=Number(r.bitDepth), hz=Number(r.sampleRate);
     if (bit>=8 && bit<=32) result.bitDepth=bit;
@@ -217,10 +217,10 @@
     var exp=Number(r.expiresAt);
     if (exp>0) {
       var delay=(exp<1e12?exp*1000:exp)-Date.now()-3000;
-      if (delay<=0) { log('stream: URL já expirou'); return null; }
+      if (delay<=0) { log('stream: URL has expired'); return null; }
       result.expiresInMs=Math.floor(delay);
     }
-    log('stream: FLAC direto compatível encontrado');
+    log('stream: compatible direct FLAC found');
     return result;
   }
   function load(t) {
@@ -230,13 +230,13 @@
       if (session.error) return session;
     }
     var base=baseUrl();
-    if (!base) { log('configuração: URL do addon inválido'); return {error:'config'}; }
-    if (!s(t && t.title) || !s(t && t.artist)) { log('faixa: título/artista em falta'); return {error:'track-metadata'}; }
-    log('início: qualidade='+quality()+', ISRC='+(s(t.isrc)?'sim':'não'));
+    if (!base) { log('configuration: invalid addon URL'); return {error:'config'}; }
+    if (!s(t && t.title) || !s(t && t.artist)) { log('track: missing title/artist'); return {error:'track-metadata'}; }
+    log('start: quality='+quality()+', ISRC='+(s(t.isrc)?'yes':'no'));
     var r=resolve(t,base,true);
     // Spotify can use a different ISRC for a reissue; retry by text only.
     if (r.miss && s(t.isrc)) {
-      log('resolve: a tentar segunda pesquisa sem ISRC');
+      log('resolve: retrying text search without ISRC');
       r=resolve(t,base,false);
     }
     if (r.error) return r;
@@ -250,21 +250,21 @@
   }
   function fallback(r) {
     if (r.error==='no-match') return reason('not-found');
-    if (r.error==='sign-in' || r.error==='config') return reason('sign-in','Verifica o URL e atualiza o token Eclipse nas definições.');
-    if (r.error==='forbidden') return reason('sign-in','HTTP 403: verifica a autorização da conta e atualiza o token Eclipse.');
+    if (r.error==='sign-in' || r.error==='config') return reason('sign-in','Check the URL and update your Eclipse token in settings.');
+    if (r.error==='forbidden') return reason('sign-in','HTTP 403: check your account access and update the Eclipse token.');
     if (r.error==='rate-limited') {
       var limited=reason('rate-limited');
       if (limited) limited.retryAfterMs=r.retryAfterMs;
       return limited;
     }
-    if (r.error==='network') return reason('network','Falha de rede na ligação ao Eclipse.');
-    if (r.error==='unsupported') return reason('quality-unavailable','Serviço devolveu stream incompatível com FLAC direto.');
+    if (r.error==='network') return reason('network','Network error connecting to Eclipse.');
+    if (r.error==='unsupported') return reason('quality-unavailable','The service returned a stream incompatible with clear FLAC.');
     return reason('server-down', (r.stage||'API')+': '+r.error);
   }
   myspoti.provide('audio-source',function(t){
     var r=load(t);
     if (r.audio) return r.audio;
-    log('resultado: '+r.error+(r.stage ? ' ('+r.stage+')' : ''));
+    log('result: '+r.error+(r.stage ? ' ('+r.stage+')' : ''));
     return fallback(r);
   });
   myspoti.provide('download-source',function(t){
@@ -281,10 +281,10 @@
     if (e.key==='account_token') {
       myspoti.storage.remove('session_token');
       myspoti.storage.remove('session_checked');
-      log('definições: token atualizado');
+      log('settings: token updated');
     }
-    if(e.key==='addon_url') log('definições: URL atualizado ('+(baseUrl()?'válido':'inválido')+')');
-    if(e.key==='quality') log('definições: qualidade '+quality());
+    if(e.key==='addon_url') log('settings: URL updated ('+(baseUrl()?'valid':'invalid')+')');
+    if(e.key==='quality') log('settings: quality '+quality());
   });
   var connectWasAway=false, connectReturnUri='';
   myspoti.on('playback',function(e){
@@ -300,7 +300,7 @@
       var devices=myspoti.spotify.devices.list(), active=devices.filter(function(d){return d.active;});
       if (active.length!==1) return;
       if (!active[0].local) {
-        if (!connectWasAway) log('connect: dispositivo remoto confirmado; não retomar no telefone');
+        if (!connectWasAway) log('connect: remote device confirmed; do not resume on phone');
         connectWasAway=true; connectReturnUri=''; return;
       }
       // A transient local echo before the remote takeover is never a return.
@@ -309,8 +309,8 @@
       if (!state || state.isPaused || state.isBuffering || !state.item || state.item.uri!==uri || !current || current.uri!==uri) return;
       connectReturnUri=uri;
       if (myspoti.player.play()===false) { connectReturnUri=''; return; }
-      log('connect: regresso ao telefone confirmado; retoma pedida ao leitor MySpoti');
-    } catch (ignored) { log('connect: estado dos dispositivos indisponível; reprodução mantida'); }
+      log('connect: return to phone confirmed; resume requested from MySpoti');
+    } catch (ignored) { log('connect: device state unavailable; playback left unchanged'); }
   });
-  log('carregado: versão 0.5.0');
+  log('loaded: version 0.5.1');
 })();

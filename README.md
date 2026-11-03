@@ -1,56 +1,50 @@
-# Eclipse FLAC Bridge para MySpoti
+# Eclipse FLAC Bridge for MySpoti
 
-Extensão experimental para reprodução e download FLAC usando a tua conta Eclipse autorizada.
+FLAC playback and downloads using your authorized Eclipse account. Requires MySpoti 2.1.0 or later; segmented audio also requires its `audio.manifest` feature. Not affiliated with Eclipse or MySpoti.
 
-## Instalação
+## Install and configure
 
-Descarrega `extension.zip` em Releases e instala-o em Extensões no MySpoti. Nas definições da extensão, preenche o **URL do addon Eclipse** (terminado em `/manifest.json`) e o **Token da conta Eclipse**. Coloca a extensão em primeiro nas fontes de reprodução e download.
+Download `extension.zip` from Releases and install it in MySpoti's Extensions screen. Enter your **Eclipse addon URL** and **Eclipse account token**, then put Eclipse first in playback and download sources. The public package contains no credentials.
 
-O pacote distribuído tem os campos vazios. Nunca publiques tokens, URLs pessoais ou pacotes personalizados com credenciais. O login Google dentro do WebView não faz parte desta versão.
+### Get your account token and addon URL
 
-## Como obter o token e o URL
+1. On a **PC**, sign in at https://eclipsemusic.app/account.
+2. Press **F12**. Open **Application** in Chrome/Edge/Brave, or **Storage** in Firefox.
+3. Open **Local Storage → https://eclipsemusic.app**.
+4. Find **`eclipse_token`** and copy only its **value**, without quotes. Paste it into **Eclipse account token** in the extension's settings. This is not your Google password.
+5. On the Eclipse account page, open **Support the project → Eclipse addon → Copy**. Paste the complete personal link ending in `/manifest.json` into **Eclipse addon URL**.
 
-1. Num browser **num PC**, abre https://eclipsemusic.app/account e inicia sessão na conta Eclipse.
-2. Prime **F12** e abre **Application** (Chrome/Edge/Brave) ou **Storage/Armazenamento** (Firefox).
-3. Abre **Local Storage → https://eclipsemusic.app**.
-4. Procura a chave **`eclipse_token`** e copia apenas o seu **valor**, sem aspas. Cola-o no campo **Token da conta Eclipse** da extensão. Não é a password Google.
-5. Para o URL, abre **Support the project → Eclipse addon → Copy** na página da conta. Cola o link completo no campo **URL do addon Eclipse**.
+If the key is missing, make sure you completed sign-in on the same domain selected in Local Storage. You do not need to paste commands into the console or disable browser protections. Never share your token, personal URL, logs containing signed URLs, or a personalized package. Google sign-in inside MySpoti's WebView is not used.
 
-Se a chave não aparecer, confirma que o login foi concluído em `https://eclipsemusic.app`, no mesmo domínio selecionado no Local Storage. Mantém o token e o link privados. Não precisas de colar comandos na consola nem desativar proteções do browser.
+## Spotify Connect: phone and computer
 
-## Sessão
+1. Turn **Count extension plays on Spotify** off in MySpoti's settings.
+2. Keep **Resume Eclipse when returning to this phone (experimental)** on in this extension.
+3. Keep Eclipse first in playback sources.
 
-A extensão verifica a sessão no primeiro uso e depois diariamente quando usada. Guarda o token renovado devolvido pelo servidor. Nos testes, os tokens tinham validade de 30 dias e a API devolvia uma renovação por mais 30 dias. Isso não garante validade indefinida: sessões expiradas, revogadas ou alterações no serviço podem exigir novo token. Alterar ou apagar o campo do token elimina a sessão renovada em cache.
+The extension observes the remote device and requests playback through Eclipse only after confirming this phone is active again. The user confirmed phone → PC → phone playback; Spotify audio may be heard briefly before Eclipse resumes. Detection depends on playback events and may wait for the next progress event (10 seconds). A very fast round trip may not be detected. Paused, buffering, unknown or ambiguous device states do not trigger automatic resume.
 
-## Áudio e limitações
+This feature does not create its own Spotify mirror or guarantee Spotify listen counting while Eclipse plays. It requests playback events, device access (`library.read`) and playback control permissions.
 
-Suporta FLAC direto e playlists HLS FLAC/fMP4 sem encriptação, finitas e com segmentos HTTPS numerados consecutivamente. Para estas playlists, gera o manifesto DASH suportado pelo MySpoti; o áudio não é recodificado. Layouts incompatíveis e DRM são recusados.
+## Session lifetime
 
-Requer MySpoti 2.1.0 ou posterior e a funcionalidade `audio.manifest` para áudio segmentado. A qualidade real depende do stream devolvido pelo Eclipse.
+The extension verifies the session on first use and then daily when used, keeping the renewed token returned by Eclipse. Observed tokens were valid for 30 days, and verification returned a renewed 30-day lifetime. This does not guarantee indefinite access: an expired or revoked session, or service changes, may require a new token. Editing or clearing the token field clears the cached renewed session. An explicitly entered addon URL takes precedence over the discovered account URL.
 
-**Estado experimental:** resolução e manifestos foram testados com a API real, incluindo FLAC 24 bits/96 kHz. Um ficheiro FLAC real foi remuxado e descodificado integralmente no PC. O utilizador confirmou reprodução Eclipse e transferência Connect nos dois sentidos no Android; download completo e seek no Android ainda não foram confirmados. Não há afiliação com Eclipse ou MySpoti.
+## Audio support and validation
 
-## Spotify Connect: telefone e computador
+Supports direct FLAC and unencrypted, finite HLS FLAC/fMP4 playlists with consecutive numbered HTTPS segments. For those playlists it generates the DASH manifest supported by MySpoti, without re-encoding audio. Unsupported layouts and DRM are rejected. Actual quality depends on Eclipse's response.
 
-Para evitar que o MySpoti volte a puxar a música do PC para o telefone:
+Real API tests covered FLAC up to 24-bit/96 kHz. A complete FLAC file was remuxed and decoded on the PC. The user confirmed Eclipse playback and Connect transfers in both directions on Android. Complete downloads and seeking on Android have not yet been confirmed.
 
-1. Desliga **Contar reproduções de extensões no Spotify** nas definições do MySpoti.
-2. Mantém **Retomar Eclipse ao voltar ao telefone (experimental)** ligado nas definições desta extensão.
-3. Mantém Eclipse em primeiro nas fontes de reprodução.
+## Development and tests
 
-A extensão observa o dispositivo remoto e só pede retoma pela fonte Eclipse quando confirma o telefone como dispositivo ativo. O utilizador confirmou o percurso telefone → PC → telefone; no regresso pode ouvir-se Spotify por breves segundos antes de Eclipse. A deteção depende dos eventos de reprodução e pode esperar pelo próximo progresso de 10 s; uma ida/volta muito rápida pode não ser detetada. Pausa, buffering ou dispositivo ambíguo não provocam retoma automática.
-
-Esta funcionalidade não cria um espelho Spotify próprio nem garante contagem Spotify enquanto Eclipse toca. A atualização pede permissões de eventos de reprodução, consulta de dispositivos (`library.read`) e controlo de reprodução. Os campos de token e URL permanecem vazios no pacote público.
-
-## Desenvolvimento e testes
-
-Sem dependências JavaScript externas. Com Node.js instalado:
+No external JavaScript dependencies. With Node.js:
 
 ```sh
 node --test tests/*.test.cjs
 ```
 
-Com o runner oficial `myspoti-ext` disponível:
+With the official `myspoti-ext` runner:
 
 ```sh
 myspoti-ext check .
@@ -60,6 +54,4 @@ myspoti-ext test . --scenario tests/edge-cases.json
 myspoti-ext pack .
 ```
 
-O runner é compilado a partir da pasta `base` do [MySpoti](https://github.com/kota-zo/myspoti) com `./gradlew :extensions-cli:installDist` (Windows: `gradlew.bat`). Os cenários são offline e usam credenciais fictícias.
-
-Os logs reais do runner podem conter URLs assinados: mantém-nos privados.
+Build the runner from the `base` directory of [MySpoti](https://github.com/kota-zo/myspoti) using `./gradlew :extensions-cli:installDist` (`gradlew.bat` on Windows). Scenarios are offline and use fictional credentials. Keep real runner logs private: they may include signed media URLs.
